@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Map: Rentals near Lakehead University Thunder Bay</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        h1 {
+            text-align: center;
+            color: #1a365d;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+        #map {
+            height: 620px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto 20px auto;
+            border: 2px solid #2c5282;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .info {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95em;
+        }
+        .legend-color {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 0 1px #333;
+        }
+        .note {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 15px;
+        }
+        a {
+            color: #2b6cb0;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>🏠 Interactive Map: 3BR Rentals near Lakehead University</h1>
+    <p class="subtitle">Thunder Bay Campus • Click markers for details • Zoom &amp; pan to explore</p>
+
+    <div id="map"></div>
+
+    <div class="info">
+        <h2 style="margin-top:0; color:#1a365d;">How to use this map</h2>
+        <ul style="line-height:1.6;">
+            <li><strong>Click any marker</strong> to see address, estimated rent per person, walking/driving time, and direct links.</li>
+            <li><strong>Zoom in/out</strong> with mouse wheel or +/- buttons for more detail.</li>
+            <li><strong>Drag to pan</strong> around Thunder Bay.</li>
+            <li>Markers are <strong>approximate</strong> based on available listing data (exact unit locations may vary slightly until you contact the landlord).</li>
+        </ul>
+
+        <h3 style="color:#2c5282;">Key Listings Shown</h3>
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background:#e53e3e;"></div>
+                <span><strong>Campus</strong> (955 Oliver Rd)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background:#38a169;"></div>
+                <span><strong>Very close / Walking distance</strong> (e.g. 631 Oliver Rd area, Beverly St)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background:#3182ce;"></div>
+                <span><strong>Short commute</strong> (e.g. Piccadilly Ave ~4.6 km)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background:#805ad5;"></div>
+                <span><strong>Shared 3BR rooms</strong> (Roomies.ca examples)</span>
+            </div>
+        </div>
+
+        <p class="note">
+            <strong>Budget fit:</strong> Most 3BR units or shared rooms here split to <strong>$650–$950 per person</strong> (some utilities included). 
+            Always confirm current price, utilities, and exact walking time on Google Maps. 
+            Listings move fast — check the links and contact landlords directly.
+        </p>
+
+        <p class="note" style="margin-top:8px;">
+            <strong>Tip:</strong> For the most accurate walking distance, open Google Maps and search the full address + “to 955 Oliver Road, Thunder Bay”.
+        </p>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Initialize map centered on Lakehead University Thunder Bay campus
+        var map = L.map('map').setView([48.4215, -89.2585], 13);
+
+        // OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Campus marker (main reference)
+        var campusIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+        L.marker([48.4215, -89.2585], {icon: campusIcon}).addTo(map)
+            .bindPopup(`
+                <b>🎓 Lakehead University Thunder Bay Campus</b><br>
+                955 Oliver Road, Thunder Bay, ON P7B 5E1<br><br>
+                <small>Main reference point for all distances</small>
+            `).openPopup();
+
+        // Marker 1: 435 Piccadilly Ave (3BR ~$2200 total)
+        var piccadillyIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+        L.marker([48.395, -89.235], {icon: piccadillyIcon}).addTo(map)
+            .bindPopup(`
+                <b>🏠 435 Piccadilly Ave Unit 1</b><br>
+                Thunder Bay, ON P7B 5C8<br><br>
+                <strong>3 Bedroom apartment</strong><br>
+                ~$2,200/month total ≈ <strong>$733 per person</strong><br><br>
+                <strong>Distance:</strong> ~4.6 km from campus<br>
+                ~7 min drive / 55–60 min walk<br><br>
+                <a href="https://www.apartments.com/435-435-piccadilly-ave-thunder-bay-on-unit-1/2mnqkwc/" target="_blank">View listing →</a>
+            `);
+
+        // Marker 2: 631 Oliver Road area (very close, walkable)
+        var oliverIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+        L.marker([48.412, -89.255], {icon: oliverIcon}).addTo(map)
+            .bindPopup(`
+                <b>🏠 631 Oliver Road Area</b><br>
+                Thunder Bay, ON P7B 2H6<br><br>
+                <strong>3BR townhouse / rooms available</strong><br>
+                Multiple recent listings (rooms ~$700–$950 incl. or whole unit split)<br><br>
+                <strong>Distance:</strong> Very close on same road as campus<br>
+                Likely 10–20 min walk or short bike ride<br><br>
+                <a href="https://www.medshousing.com/en/medical-housing/fully-furnished-all-inclusive-apartments-close-to-nosm-lakehead-6335/" target="_blank">See related listings →</a><br>
+                Search Kijiji/Facebook for current rooms here
+            `);
+
+        // Marker 3: Beverly Street / Roomies townhouse (~1km)
+        var beverlyIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-violet.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+        L.marker([48.428, -89.262], {icon: beverlyIcon}).addTo(map)
+            .bindPopup(`
+                <b>🏠 Beverly Street Area (Roomies.ca)</b><br>
+                Thunder Bay, ON P7B 5S8<br><br>
+                <strong>Shared 3BR townhouse</strong><br>
+                Room ~$900/month <strong>inclusive</strong><br>
+                (utilities included)<br><br>
+                <strong>Distance:</strong> ~1 km from campus<br>
+                Excellent walking distance<br><br>
+                <a href="https://www.roomies.ca/rooms/743021" target="_blank">View this room listing →</a>
+            `);
+
+        // Marker 4: Another Roomies shared apartment (5 min walk)
+        L.marker([48.430, -89.265], {icon: beverlyIcon}).addTo(map)
+            .bindPopup(`
+                <b>🏠 Shared 3BR Apartment (Roomies.ca)</b><br>
+                Thunder Bay<br><br>
+                <strong>Room in 3BR apartment</strong><br>
+                ~$695/month <strong>inclusive</strong> (wifi/cable)<br>
+                5 minutes walk to Lakehead University<br><br>
+                <a href="https://www.roomies.ca/rooms/477629" target="_blank">View this room listing →</a>
+            `);
+
+        // Marker 5: Moodie St E example (Kijiji 3BR)
+        var moodieIcon = L.icon({
+            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+            iconSize: [25, 41],
+            iconAnchor: [12, 41],
+            popupAnchor: [1, -34],
+            shadowSize: [41, 41]
+        });
+
+        L.marker([48.405, -89.240], {icon: moodieIcon}).addTo(map)
+            .bindPopup(`
+                <b>🏠 1408 Moodie St E Area</b><br>
+                Thunder Bay<br><br>
+                <strong>3BR upper unit example</strong><br>
+                ~$2,650/month total ≈ <strong>$883 per person</strong><br><br>
+                <strong>Distance:</strong> Short drive / reasonable commute to campus<br><br>
+                <a href="https://www.kijiji.ca/v-apartments-condos/thunder-bay/3-bed-1-5-bath-upper-unit-moodie-st-e-2-650-m-july-1/1739472559" target="_blank">View Kijiji listing →</a>
+            `);
+
+        // Add a circle to show ~2km walking radius around campus (approximate comfortable walk)
+        L.circle([48.4215, -89.2585], {
+            color: '#38a169',
+            fillColor: '#c6f6d5',
+            fillOpacity: 0.15,
+            radius: 2000
+        }).addTo(map).bindPopup("Approximate 2 km / ~25 min walking radius from campus");
+
+        // Add scale control
+        L.control.scale().addTo(map);
+
+        // Optional: Add a simple legend control (text box)
+        var legend = L.control({position: 'bottomright'});
+        legend.onAdd = function(map) {
+            var div = L.DomUtil.create('div', 'info legend');
+            div.innerHTML = `
+                <div style="background:white; padding:8px 12px; border-radius:6px; box-shadow:0 1px 4px rgba(0,0,0,0.2); font-size:13px; line-height:1.4;">
+                    <strong>Legend</strong><br>
+                    🔴 Campus<br>
+                    🟢 Very close / walkable<br>
+                    🔵 Short commute<br>
+                    🟣 Shared rooms (Roomies)
+                </div>
+            `;
+            return div;
+        };
+        legend.addTo(map);
+    </script>
+</body>
+</html>
